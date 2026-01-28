@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#78350f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Espresso">
+  <meta name="description" content="Registro y optimización de extracciones de espresso">
+  
+  <title>Espresso Tracker</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: #f5f5f4;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      color: #fde68a;
+      font-size: 0.875rem;
+    }
+    
+    .export-btn {
+      background: #92400e;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    
+    .export-btn:hover {
+      background: #78350f;
+    }
+    
+    /* Alertas */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+    }
+    
+    .alert-error {
+      background: #fee2e2;
+      border: 1px solid #f87171;
+      color: #b91c1c;
+    }
+    
+    .alert-warning {
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      color: #92400e;
+    }
+    
+    .alert-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: inherit;
+      font-weight: bold;
+    }
+    
+    /* Botón nuevo shot */
+    .new-shot-btn {
+      width: 100%;
+      background: #b45309;
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: background 0.2s;
+    }
+    
+    .new-shot-btn:hover {
+      background: #92400e;
+    }
+    
+    /* Formulario */
+    .form-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-card h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #292524;
+      margin-bottom: 16px;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    @media (min-width: 768px) {
+      .form-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    .form-group {
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #57534e;
+      margin-bottom: 4px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      border: 1px solid #d6d3d1;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.875rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #b45309;
+      box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1);
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    /* Sugerencias autocompletado */
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #d6d3d1;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      max-height: 160px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .suggestion-item {
+      padding: 8px 12px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    
+    .suggestion-item:hover {
+      background: #fef3c7;
+    }
+    
+    /* Ratio box */
+    .ratio-box {
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      border-radius: 6px;
+      padding: 8px 16px;
+      margin-bottom: 16px;
+      font-size: 0.875rem;
+    }
+    
+    .ratio-box span:first-child {
+      color: #57534e;
+    }
+    
+    .ratio-box span:last-child {
+      font-weight: 600;
+      color: #92400e;
+    }
+    
+    /* Comentario full width */
+    .form-full {
+      margin-bottom: 16px;
+    }
+    
+    /* Botones formulario */
+    .form-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn-save {
+      flex: 1;
+      background: #b45309;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn-save:hover {
+      background: #92400e;
+    }
+    
+    .btn-save:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-cancel {
+      background: white;
+      color: #57534e;
+      border: 1px solid #d6d3d1;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn-cancel:hover {
+      background: #f5f5f4;
+    }
+    
+    /* Tabla */
+    .table-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .table-header {
+      padding: 16px;
+      border-bottom: 1px solid #e7e5e4;
+    }
+    
+    .table-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #292524;
+    }
+    
+    .table-empty {
+      padding: 48px 16px;
+      text-align: center;
+      color: #78716c;
+    }
+    
+    .table-scroll {
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    
+    thead {
+      background: #fafaf9;
+    }
+    
+    th {
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 500;
+      color: #57534e;
+      white-space: nowrap;
+    }
+    
+    th.text-right {
+      text-align: right;
+    }
+    
+    th.text-center {
+      text-align: center;
+    }
+    
+    td {
+      padding: 8px 12px;
+      color: #292524;
+      border-top: 1px solid #f5f5f4;
+    }
+    
+    td.text-right {
+      text-align: right;
+    }
+    
+    td.text-center {
+      text-align: center;
+    }
+    
+    td.ratio {
+      font-weight: 500;
+      color: #b45309;
+    }
+    
+    td.comment {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #57534e;
+    }
+    
+    tr:hover {
+      background: #fafaf9;
+    }
+    
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px;
+      transition: transform 0.15s;
+    }
+    
+    .action-btn:hover {
+      transform: scale(1.2);
+    }
+    
+    .action-btn.edit {
+      color: #b45309;
+    }
+    
+    .action-btn.delete {
+      color: #dc2626;
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #78716c;
+    }
+    
+    /* Loading */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 50vh;
+      color: #57534e;
+    }
+    
+    /* Ocultar */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Loading -->
+    <div id="loading" class="loading">
+      Cargando datos...
+    </div>
+    
+    <!-- App -->
+    <div id="app" class="hidden">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <div>
+            <h1>☕ Registro de Extracciones</h1>
+            <p>Seguimiento y optimización de espresso</p>
+          </div>
+          <button id="exportBtn" class="export-btn hidden" onclick="exportToCSV()">
+            <span>📥</span> Exportar CSV
+          </button>
+        </div>
+      </header>
+      
+      <!-- Error alert -->
+      <div id="errorAlert" class="alert alert-error hidden">
+        <span id="errorMessage"></span>
+        <button class="alert-close" onclick="hideError()">×</button>
+      </div>
+      
+      <!-- Botón nuevo shot -->
+      <button id="newShotBtn" class="new-shot-btn" onclick="showForm()">
+        + Nuevo Shot
+      </button>
+      
+      <!-- Formulario -->
+      <div id="formCard" class="form-card hidden">
+        <h2 id="formTitle">Nuevo registro</h2>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="fecha">
+          </div>
+          
+          <div class="form-group">
+            <label>Hora</label>
+            <input type="time" id="hora">
+          </div>
+          
+          <div class="form-group">
+            <label>Café</label>
+            <input type="text" id="cafe" placeholder="Origen / blend" autocomplete="off" onfocus="showSuggestions('cafe')" oninput="filterSuggestions('cafe')">
+            <div id="cafeSuggestions" class="suggestions hidden"></div>
+          </div>
+          
+          <div class="form-group">
+            <label>Cesta</label>
+            <input type="text" id="cesta" placeholder="Tipo de cesta" autocomplete="off" onfocus="showSuggestions('cesta')" oninput="filterSuggestions('cesta')">
+            <div id="cestaSuggestions" class="suggestions hidden"></div>
+          </div>
+          
+          <div class="form-group">
+            <label>Dosis (g) *</label>
+            <input type="number" id="dosis" step="0.1" placeholder="18" oninput="updateRatio()">
+          </div>
+          
+          <div class="form-group">
+            <label>Grosor molienda</label>
+            <select id="grosor"></select>
+          </div>
+          
+          <div class="form-group">
+            <label>Yield (g) *</label>
+            <input type="number" id="yield" step="1" placeholder="36" oninput="updateRatio()">
+          </div>
+          
+          <div class="form-group">
+            <label>Tiempo (s) *</label>
+            <input type="number" id="tiempo" step="1" placeholder="28">
+          </div>
+        </div>
+        
+        <div class="ratio-box">
+          <span>Ratio (yield/dosis): </span>
+          <span id="ratioDisplay">-</span>
+        </div>
+        
+        <div class="form-full">
+          <div class="form-group">
+            <label>Comentario sobre el sabor</label>
+            <textarea id="comentario" placeholder="Notas de cata, acidez, cuerpo, amargor..."></textarea>
+          </div>
+        </div>
+        
+        <div class="form-buttons">
+          <button id="saveBtn" class="btn-save" onclick="saveRecord()">Guardar</button>
+          <button class="btn-cancel" onclick="hideForm()">Cancelar</button>
+        </div>
+      </div>
+      
+      <!-- Tabla -->
+      <div class="table-card">
+        <div class="table-header">
+          <h2 id="tableTitle">Historial (0 registros)</h2>
+        </div>
+        
+        <div id="tableEmpty" class="table-empty">
+          No hay registros todavía. ¡Añade tu primer shot!
+        </div>
+        
+        <div id="tableScroll" class="table-scroll hidden">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Café</th>
+                <th>Cesta</th>
+                <th class="text-right">Dosis</th>
+                <th class="text-right">Grosor</th>
+                <th class="text-right">Yield</th>
+                <th class="text-right">Tiempo</th>
+                <th class="text-right">Ratio</th>
+                <th>Comentario</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <footer class="footer">
+        Los datos se guardan localmente en tu dispositivo
+      </footer>
+    </div>
+  </div>
+  
+  <script>
+    // Estado de la aplicación
+    let records = [];
+    let editingId = null;
+    let cafeSuggestions = [];
+    let cestaSuggestions = [];
+    
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', function() {
+      initGrosorSelect();
+      loadRecords();
+      
+      // Cerrar sugerencias al hacer click fuera
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#cafe') && !e.target.closest('#cafeSuggestions')) {
+          document.getElementById('cafeSuggestions').classList.add('hidden');
+        }
+        if (!e.target.closest('#cesta') && !e.target.closest('#cestaSuggestions')) {
+          document.getElementById('cestaSuggestions').classList.add('hidden');
+        }
+      });
+    });
+    
+    // Inicializar select de grosor
+    function initGrosorSelect() {
+      const select = document.getElementById('grosor');
+      for (let i = 0; i <= 12; i += 0.25) {
+        const option = document.createElement('option');
+        let val;
+        if (i % 1 === 0) {
+          val = i + '.0';
+        } else if (i % 0.5 === 0) {
+          val = i.toFixed(1);
+        } else {
+          val = i.toFixed(2);
+        }
+        option.value = val;
+        option.textContent = val;
+        select.appendChild(option);
+      }
+      select.value = '5.0';
+    }
+    
+    // Cargar registros
+    function loadRecords() {
+      try {
+        const stored = localStorage.getItem('espresso-records');
+        if (stored) {
+          records = JSON.parse(stored);
+        }
+        updateSuggestions();
+        renderTable();
+      } catch (e) {
+        console.error('Error loading:', e);
+      }
+      
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+    }
+    
+    // Guardar registros
+    function saveRecordsToStorage() {
+      try {
+        localStorage.setItem('espresso-records', JSON.stringify(records));
+      } catch (e) {
+        showError('Error al guardar los datos');
+      }
+    }
+    
+    // Actualizar sugerencias
+    function updateSuggestions() {
+      cafeSuggestions = [...new Set(records.map(r => r.cafe).filter(Boolean))];
+      cestaSuggestions = [...new Set(records.map(r => r.cesta).filter(Boolean))];
+    }
+    
+    // Mostrar formulario
+    function showForm() {
+      const lastRecord = records.length > 0 ? records[records.length - 1] : null;
+      const now = new Date();
+      
+      document.getElementById('fecha').value = now.toISOString().split('T')[0];
+      document.getElementById('hora').value = now.toTimeString().slice(0, 5);
+      document.getElementById('cafe').value = lastRecord?.cafe || '';
+      document.getElementById('cesta').value = lastRecord?.cesta || '';
+      document.getElementById('dosis').value = lastRecord?.dosis || '';
+      document.getElementById('grosor').value = lastRecord?.grosor || '5.0';
+      document.getElementById('yield').value = '';
+      document.getElementById('tiempo').value = '';
+      document.getElementById('comentario').value = '';
+      
+      document.getElementById('formTitle').textContent = 'Nuevo registro';
+      document.getElementById('saveBtn').textContent = 'Guardar';
+      editingId = null;
+      
+      updateRatio();
+      
+      document.getElementById('newShotBtn').classList.add('hidden');
+      document.getElementById('formCard').classList.remove('hidden');
+    }
+    
+    // Ocultar formulario
+    function hideForm() {
+      document.getElementById('formCard').classList.add('hidden');
+      document.getElementById('newShotBtn').classList.remove('hidden');
+      editingId = null;
+    }
+    
+    // Calcular ratio
+    function calculateRatio(dosis, yieldVal) {
+      const d = parseFloat(dosis);
+      const y = parseFloat(yieldVal);
+      if (d > 0 && y > 0) {
+        return (y / d).toFixed(2);
+      }
+      return '-';
+    }
+    
+    // Actualizar display del ratio
+    function updateRatio() {
+      const dosis = document.getElementById('dosis').value;
+      const yieldVal = document.getElementById('yield').value;
+      document.getElementById('ratioDisplay').textContent = calculateRatio(dosis, yieldVal);
+    }
+    
+    // Mostrar sugerencias
+    function showSuggestions(field) {
+      const suggestions = field === 'cafe' ? cafeSuggestions : cestaSuggestions;
+      const container = document.getElementById(field + 'Suggestions');
+      const input = document.getElementById(field);
+      
+      if (suggestions.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+      
+      const filtered = filterSuggestionsList(suggestions, input.value);
+      renderSuggestions(container, filtered, field);
+      
+      if (filtered.length > 0) {
+        container.classList.remove('hidden');
+      }
+    }
+    
+    // Filtrar sugerencias
+    function filterSuggestions(field) {
+      const suggestions = field === 'cafe' ? cafeSuggestions : cestaSuggestions;
+      const container = document.getElementById(field + 'Suggestions');
+      const input = document.getElementById(field);
+      
+      const filtered = filterSuggestionsList(suggestions, input.value);
+      renderSuggestions(container, filtered, field);
+      
+      if (filtered.length > 0) {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+    
+    function filterSuggestionsList(suggestions, value) {
+      if (!value) return suggestions;
+      const lower = value.toLowerCase();
+      return suggestions.filter(s => s.toLowerCase().includes(lower));
+    }
+    
+    function renderSuggestions(container, suggestions, field) {
+      container.innerHTML = suggestions.map(s => 
+        `<div class="suggestion-item" onclick="selectSuggestion('${field}', '${s.replace(/'/g, "\\'")}')">${s}</div>`
+      ).join('');
+    }
+    
+    function selectSuggestion(field, value) {
+      document.getElementById(field).value = value;
+      document.getElementById(field + 'Suggestions').classList.add('hidden');
+    }
+    
+    // Guardar registro
+    function saveRecord() {
+      const dosis = document.getElementById('dosis').value;
+      const yieldVal = document.getElementById('yield').value;
+      const tiempo = document.getElementById('tiempo').value;
+      
+      if (!dosis || !yieldVal || !tiempo) {
+        showError('Por favor, completa dosis, yield y tiempo.');
+        return;
+      }
+      
+      const record = {
+        id: editingId || Date.now(),
+        fecha: document.getElementById('fecha').value,
+        hora: document.getElementById('hora').value,
+        cafe: document.getElementById('cafe').value,
+        cesta: document.getElementById('cesta').value,
+        dosis: dosis,
+        grosor: document.getElementById('grosor').value,
+        yield: yieldVal,
+        tiempo: tiempo,
+        comentario: document.getElementById('comentario').value,
+        ratio: calculateRatio(dosis, yieldVal)
+      };
+      
+      if (editingId) {
+        const index = records.findIndex(r => r.id === editingId);
+        if (index !== -1) {
+          records[index] = record;
+        }
+      } else {
+        records.push(record);
+      }
+      
+      saveRecordsToStorage();
+      updateSuggestions();
+      renderTable();
+      hideForm();
+    }
+    
+    // Editar registro
+    function editRecord(id) {
+      const record = records.find(r => r.id === id);
+      if (!record) return;
+      
+      document.getElementById('fecha').value = record.fecha;
+      document.getElementById('hora').value = record.hora;
+      document.getElementById('cafe').value = record.cafe || '';
+      document.getElementById('cesta').value = record.cesta || '';
+      document.getElementById('dosis').value = record.dosis;
+      document.getElementById('grosor').value = record.grosor;
+      document.getElementById('yield').value = record.yield;
+      document.getElementById('tiempo').value = record.tiempo;
+      document.getElementById('comentario').value = record.comentario || '';
+      
+      document.getElementById('formTitle').textContent = 'Editar registro';
+      document.getElementById('saveBtn').textContent = 'Actualizar';
+      editingId = id;
+      
+      updateRatio();
+      
+      document.getElementById('newShotBtn').classList.add('hidden');
+      document.getElementById('formCard').classList.remove('hidden');
+    }
+    
+    // Eliminar registro
+    function deleteRecord(id) {
+      if (confirm('¿Eliminar este registro?')) {
+        records = records.filter(r => r.id !== id);
+        saveRecordsToStorage();
+        updateSuggestions();
+        renderTable();
+      }
+    }
+    
+    // Renderizar tabla
+    function renderTable() {
+      const count = records.length;
+      document.getElementById('tableTitle').textContent = `Historial (${count} ${count === 1 ? 'registro' : 'registros'})`;
+      
+      if (count === 0) {
+        document.getElementById('tableEmpty').classList.remove('hidden');
+        document.getElementById('tableScroll').classList.add('hidden');
+        document.getElementById('exportBtn').classList.add('hidden');
+        return;
+      }
+      
+      document.getElementById('tableEmpty').classList.add('hidden');
+      document.getElementById('tableScroll').classList.remove('hidden');
+      document.getElementById('exportBtn').classList.remove('hidden');
+      
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = [...records].reverse().map(r => `
+        <tr>
+          <td>${r.fecha}</td>
+          <td>${r.hora}</td>
+          <td>${r.cafe || '-'}</td>
+          <td>${r.cesta || '-'}</td>
+          <td class="text-right">${r.dosis}g</td>
+          <td class="text-right">${r.grosor}</td>
+          <td class="text-right">${r.yield}g</td>
+          <td class="text-right">${r.tiempo}s</td>
+          <td class="text-right ratio">${r.ratio}</td>
+          <td class="comment" title="${(r.comentario || '').replace(/"/g, '&quot;')}">${r.comentario || '-'}</td>
+          <td class="text-center" style="white-space: nowrap;">
+            <button class="action-btn edit" onclick="editRecord(${r.id})" title="Editar">✏️</button>
+            <button class="action-btn delete" onclick="deleteRecord(${r.id})" title="Eliminar">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    // Exportar a CSV
+    function exportToCSV() {
+      if (records.length === 0) {
+        showError('No hay datos para exportar.');
+        return;
+      }
+      
+      const headers = ['Fecha', 'Hora', 'Café', 'Cesta', 'Dosis (g)', 'Grosor', 'Yield (g)', 'Tiempo (s)', 'Ratio', 'Comentario'];
+      
+      const csvContent = [
+        headers.join(';'),
+        ...records.map(r => [
+          r.fecha,
+          r.hora,
+          `"${(r.cafe || '').replace(/"/g, '""')}"`,
+          `"${(r.cesta || '').replace(/"/g, '""')}"`,
+          r.dosis,
+          r.grosor,
+          r.yield,
+          r.tiempo,
+          r.ratio,
+          `"${(r.comentario || '').replace(/"/g, '""')}"`
+        ].join(';'))
+      ].join('\n');
+      
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `espresso-log-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+    
+    // Mostrar error
+    function showError(message) {
+      document.getElementById('errorMessage').textContent = message;
+      document.getElementById('errorAlert').classList.remove('hidden');
+    }
+    
+    // Ocultar error
+    function hideError() {
+      document.getElementById('errorAlert').classList.add('hidden');
+    }
+    
+    // Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registrado'))
+        .catch(err => console.log('Error registrando SW:', err));
+    }
+  </script>
+</body>
+</html>
