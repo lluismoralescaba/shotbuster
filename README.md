@@ -8,7 +8,7 @@ Aplicación web progresiva para registrar y optimizar tus extracciones de espres
 - ✅ Ratio calculado automáticamente
 - ✅ Autocompletado basado en entradas anteriores
 - ✅ Valores por defecto del último shot
-- ✅ Exportación a CSV compatible con Excel
+- ✅ Exportación e importación de archivo CSV compatible con Excel
 - ✅ Funciona offline
 - ✅ Instalable en móvil como app nativa
 
