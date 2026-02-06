@@ -1,907 +1,621 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#78350f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Espresso">
-  <meta name="description" content="Registro y optimización de extracciones de espresso">
-  
-  <title>Espresso Tracker</title>
-  
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-  
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background-color: #f5f5f4;
-      min-height: 100vh;
-      padding: 16px;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    /* Header */
-    .header {
-      background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
-      color: white;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    
-    .header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    
-    .header p {
-      color: #fde68a;
-      font-size: 0.875rem;
-    }
-    
-    .export-btn {
-      background: #92400e;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-    
-    .export-btn:hover {
-      background: #78350f;
-    }
-    
-    /* Alertas */
-    .alert {
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.875rem;
-    }
-    
-    .alert-error {
-      background: #fee2e2;
-      border: 1px solid #f87171;
-      color: #b91c1c;
-    }
-    
-    .alert-warning {
-      background: #fef3c7;
-      border: 1px solid #fbbf24;
-      color: #92400e;
-    }
-    
-    .alert-close {
-      background: none;
-      border: none;
-      font-size: 1.25rem;
-      cursor: pointer;
-      color: inherit;
-      font-weight: bold;
-    }
-    
-    /* Botón nuevo shot */
-    .new-shot-btn {
-      width: 100%;
-      background: #b45309;
-      color: white;
-      border: none;
-      padding: 14px 24px;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      transition: background 0.2s;
-    }
-    
-    .new-shot-btn:hover {
-      background: #92400e;
-    }
-    
-    /* Formulario */
-    .form-card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    .form-card h2 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #292524;
-      margin-bottom: 16px;
-    }
-    
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    
-    @media (min-width: 768px) {
-      .form-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-    
-    .form-group {
-      position: relative;
-    }
-    
-    .form-group label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #57534e;
-      margin-bottom: 4px;
-    }
-    
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      border: 1px solid #d6d3d1;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 0.875rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #b45309;
-      box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.1);
-    }
-    
-    .form-group textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-    
-    /* Sugerencias autocompletado */
-    .suggestions {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid #d6d3d1;
-      border-top: none;
-      border-radius: 0 0 6px 6px;
-      max-height: 160px;
-      overflow-y: auto;
-      z-index: 100;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    .suggestion-item {
-      padding: 8px 12px;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    
-    .suggestion-item:hover {
-      background: #fef3c7;
-    }
-    
-    /* Ratio box */
-    .ratio-box {
-      background: #fef3c7;
-      border: 1px solid #fde68a;
-      border-radius: 6px;
-      padding: 8px 16px;
-      margin-bottom: 16px;
-      font-size: 0.875rem;
-    }
-    
-    .ratio-box span:first-child {
-      color: #57534e;
-    }
-    
-    .ratio-box span:last-child {
-      font-weight: 600;
-      color: #92400e;
-    }
-    
-    /* Comentario full width */
-    .form-full {
-      margin-bottom: 16px;
-    }
-    
-    /* Botones formulario */
-    .form-buttons {
-      display: flex;
-      gap: 12px;
-    }
-    
-    .btn-save {
-      flex: 1;
-      background: #b45309;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    
-    .btn-save:hover {
-      background: #92400e;
-    }
-    
-    .btn-save:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .btn-cancel {
-      background: white;
-      color: #57534e;
-      border: 1px solid #d6d3d1;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    
-    .btn-cancel:hover {
-      background: #f5f5f4;
-    }
-    
-    /* Tabla */
-    .table-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
-    
-    .table-header {
-      padding: 16px;
-      border-bottom: 1px solid #e7e5e4;
-    }
-    
-    .table-header h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #292524;
-    }
-    
-    .table-empty {
-      padding: 48px 16px;
-      text-align: center;
-      color: #78716c;
-    }
-    
-    .table-scroll {
-      overflow-x: auto;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.875rem;
-    }
-    
-    thead {
-      background: #fafaf9;
-    }
-    
-    th {
-      padding: 8px 12px;
-      text-align: left;
-      font-weight: 500;
-      color: #57534e;
-      white-space: nowrap;
-    }
-    
-    th.text-right {
-      text-align: right;
-    }
-    
-    th.text-center {
-      text-align: center;
-    }
-    
-    td {
-      padding: 8px 12px;
-      color: #292524;
-      border-top: 1px solid #f5f5f4;
-    }
-    
-    td.text-right {
-      text-align: right;
-    }
-    
-    td.text-center {
-      text-align: center;
-    }
-    
-    td.ratio {
-      font-weight: 500;
-      color: #b45309;
-    }
-    
-    td.comment {
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: #57534e;
-    }
-    
-    tr:hover {
-      background: #fafaf9;
-    }
-    
-    .action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 4px;
-      transition: transform 0.15s;
-    }
-    
-    .action-btn:hover {
-      transform: scale(1.2);
-    }
-    
-    .action-btn.edit {
-      color: #b45309;
-    }
-    
-    .action-btn.delete {
-      color: #dc2626;
-    }
-    
-    /* Footer */
-    .footer {
-      margin-top: 24px;
-      text-align: center;
-      font-size: 0.875rem;
-      color: #78716c;
-    }
-    
-    /* Loading */
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 50vh;
-      color: #57534e;
-    }
-    
-    /* Ocultar */
-    .hidden {
-      display: none !important;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track and optimize your espresso extractions">
+    <meta name="theme-color" content="#6f4e37">
+    <title>☕ ShotBuster</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --coffee: #6f4e37;
+            --cream: #f5deb3;
+            --dark: #3e2723;
+            --light: #fff9f0;
+            --accent: #d2691e;
+            --danger: #d32f2f;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--light) 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--coffee) 0%, var(--dark) 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 {
+            color: var(--coffee);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 2px solid var(--cream);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--coffee);
+            box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .calculated {
+            background: var(--cream);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--coffee);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--coffee);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--coffee);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        .shots-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .shot-item {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--coffee);
+        }
+
+        .shot-item.troubleshooting {
+            border-left-color: var(--danger);
+            background: #ffebee;
+        }
+
+        .shot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .shot-coffee {
+            font-weight: bold;
+            color: var(--coffee);
+            font-size: 1.1rem;
+        }
+
+        .shot-datetime {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .troubleshooting-badge {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .shot-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .shot-detail {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .shot-detail strong {
+            color: var(--dark);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        datalist {
+            display: none;
+        }
+
+        .info-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                margin: 1rem auto;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Loading -->
-    <div id="loading" class="loading">
-      Cargando datos...
+    <header>
+        <h1>☕ ShotBuster</h1>
+        <p>Track and optimize your espresso extractions</p>
+    </header>
+
+    <div class="container">
+        <!-- New Shot Form -->
+        <div class="card">
+            <h2>📝 New Shot</h2>
+            <form id="shotForm">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="coffee">Coffee</label>
+                        <input type="text" id="coffee" name="coffee" list="coffeeList" required placeholder="Coffee name or origin">
+                        <datalist id="coffeeList"></datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="screen">Screen</label>
+                        <input type="text" id="screen" name="screen" list="screenList" placeholder="e.g., Standard extract">
+                        <datalist id="screenList"></datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preinfusion">Preinfusion</label>
+                        <select id="preinfusion" name="preinfusion">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dose">Dose (g)</label>
+                        <input type="number" id="dose" name="dose" step="0.1" required placeholder="18.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="grindsize">Grind Size</label>
+                        <input type="number" id="grindsize" name="grindsize" min="0" max="18" step="0.25" placeholder="5.0">
+                        <span class="info-text">0-18 (0.25 increments)</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="yield">Yield (g)</label>
+                        <input type="number" id="yield" name="yield" step="0.1" required placeholder="36.0">
+                    </div>
+
+                    <div class="form-group full-width calculated" id="ratioDisplay">
+                        Ratio: -
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time">Time (s)</label>
+                        <input type="number" id="time" name="time" step="0.1" required placeholder="28.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="troubleshooting">Troubleshooting</label>
+                        <select id="troubleshooting" name="troubleshooting">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                        <span class="info-text">Mark disastrous shots</span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="notes">Notes</label>
+                        <input type="text" id="notes" name="notes" placeholder="Tasting notes, observations...">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn-primary">💾 Save Shot</button>
+                    <button type="button" class="btn-secondary" id="clearBtn">🗑️ Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Shots History -->
+        <div class="card">
+            <h2>📊 Shot History</h2>
+            <div class="btn-group">
+                <button type="button" class="btn-secondary" id="exportBtn">📥 Export CSV</button>
+                <button type="button" class="btn-secondary" id="importBtn">📤 Import CSV</button>
+                <button type="button" class="btn-danger" id="clearAllBtn">🗑️ Clear All</button>
+            </div>
+            <input type="file" id="importFile" accept=".csv" style="display: none;">
+            
+            <div id="shotsList" class="shots-list">
+                <div class="empty-state">No shots recorded yet</div>
+            </div>
+        </div>
     </div>
-    
-    <!-- App -->
-    <div id="app" class="hidden">
-      <!-- Header -->
-      <header class="header">
-        <div class="header-content">
-          <div>
-            <h1>☕ Registro de Extracciones</h1>
-            <p>Seguimiento y optimización de espresso</p>
-          </div>
-          <button id="exportBtn" class="export-btn hidden" onclick="exportToCSV()">
-            <span>📥</span> Exportar CSV
-          </button>
-        </div>
-      </header>
-      
-      <!-- Error alert -->
-      <div id="errorAlert" class="alert alert-error hidden">
-        <span id="errorMessage"></span>
-        <button class="alert-close" onclick="hideError()">×</button>
-      </div>
-      
-      <!-- Botón nuevo shot -->
-      <button id="newShotBtn" class="new-shot-btn" onclick="showForm()">
-        + Nuevo Shot
-      </button>
-      
-      <!-- Formulario -->
-      <div id="formCard" class="form-card hidden">
-        <h2 id="formTitle">Nuevo registro</h2>
-        
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="fecha">
-          </div>
-          
-          <div class="form-group">
-            <label>Hora</label>
-            <input type="time" id="hora">
-          </div>
-          
-          <div class="form-group">
-            <label>Café</label>
-            <input type="text" id="cafe" placeholder="Origen / blend" autocomplete="off" onfocus="showSuggestions('cafe')" oninput="filterSuggestions('cafe')">
-            <div id="cafeSuggestions" class="suggestions hidden"></div>
-          </div>
-          
-          <div class="form-group">
-            <label>Cesta</label>
-            <input type="text" id="cesta" placeholder="Tipo de cesta" autocomplete="off" onfocus="showSuggestions('cesta')" oninput="filterSuggestions('cesta')">
-            <div id="cestaSuggestions" class="suggestions hidden"></div>
-          </div>
-          
-          <div class="form-group">
-            <label>Dosis (g) *</label>
-            <input type="number" id="dosis" step="0.1" placeholder="18" oninput="updateRatio()">
-          </div>
-          
-          <div class="form-group">
-            <label>Grosor molienda</label>
-            <select id="grosor"></select>
-          </div>
-          
-          <div class="form-group">
-            <label>Yield (g) *</label>
-            <input type="number" id="yield" step="1" placeholder="36" oninput="updateRatio()">
-          </div>
-          
-          <div class="form-group">
-            <label>Tiempo (s) *</label>
-            <input type="number" id="tiempo" step="1" placeholder="28">
-          </div>
-        </div>
-        
-        <div class="ratio-box">
-          <span>Ratio (yield/dosis): </span>
-          <span id="ratioDisplay">-</span>
-        </div>
-        
-        <div class="form-full">
-          <div class="form-group">
-            <label>Comentario sobre el sabor</label>
-            <textarea id="comentario" placeholder="Notas de cata, acidez, cuerpo, amargor..."></textarea>
-          </div>
-        </div>
-        
-        <div class="form-buttons">
-          <button id="saveBtn" class="btn-save" onclick="saveRecord()">Guardar</button>
-          <button class="btn-cancel" onclick="hideForm()">Cancelar</button>
-        </div>
-      </div>
-      
-      <!-- Tabla -->
-      <div class="table-card">
-        <div class="table-header">
-          <h2 id="tableTitle">Historial (0 registros)</h2>
-        </div>
-        
-        <div id="tableEmpty" class="table-empty">
-          No hay registros todavía. ¡Añade tu primer shot!
-        </div>
-        
-        <div id="tableScroll" class="table-scroll hidden">
-          <table>
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Café</th>
-                <th>Cesta</th>
-                <th class="text-right">Dosis</th>
-                <th class="text-right">Grosor</th>
-                <th class="text-right">Yield</th>
-                <th class="text-right">Tiempo</th>
-                <th class="text-right">Ratio</th>
-                <th>Comentario</th>
-                <th class="text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
-      </div>
-      
-      <footer class="footer">
-        Los datos se guardan localmente en tu dispositivo
-      </footer>
-    </div>
-  </div>
-  
-  <script>
-    // Estado de la aplicación
-    let records = [];
-    let editingId = null;
-    let cafeSuggestions = [];
-    let cestaSuggestions = [];
-    
-    // Inicialización
-    document.addEventListener('DOMContentLoaded', function() {
-      initGrosorSelect();
-      loadRecords();
-      
-      // Cerrar sugerencias al hacer click fuera
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('#cafe') && !e.target.closest('#cafeSuggestions')) {
-          document.getElementById('cafeSuggestions').classList.add('hidden');
+
+    <script>
+        // Application state
+        let shots = JSON.parse(localStorage.getItem('shots') || '[]');
+        let lastShot = JSON.parse(localStorage.getItem('lastShot') || 'null');
+
+        // DOM elements
+        const form = document.getElementById('shotForm');
+        const shotsList = document.getElementById('shotsList');
+        const ratioDisplay = document.getElementById('ratioDisplay');
+        const importFile = document.getElementById('importFile');
+
+        // Initialize
+        loadLastShotDefaults();
+        updateAutocomplete();
+        renderShots();
+
+        // Calculate ratio in real-time
+        ['dose', 'yield'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateRatio);
+        });
+
+        function calculateRatio() {
+            const dose = parseFloat(document.getElementById('dose').value);
+            const yieldVal = parseFloat(document.getElementById('yield').value);
+            
+            if (dose && yieldVal) {
+                const ratio = (yieldVal / dose).toFixed(2);
+                ratioDisplay.textContent = `Ratio: 1:${ratio}`;
+            } else {
+                ratioDisplay.textContent = 'Ratio: -';
+            }
         }
-        if (!e.target.closest('#cesta') && !e.target.closest('#cestaSuggestions')) {
-          document.getElementById('cestaSuggestions').classList.add('hidden');
+
+        // Load last shot defaults
+        function loadLastShotDefaults() {
+            if (lastShot) {
+                document.getElementById('screen').value = lastShot.screen || '';
+                document.getElementById('preinfusion').value = lastShot.preinfusion || 'No';
+                document.getElementById('dose').value = lastShot.dose || '';
+                document.getElementById('grindsize').value = lastShot.grindsize || '';
+            }
         }
-      });
-    });
-    
-    // Inicializar select de grosor
-    function initGrosorSelect() {
-      const select = document.getElementById('grosor');
-      for (let i = 0; i <= 12; i += 0.25) {
-        const option = document.createElement('option');
-        let val;
-        if (i % 1 === 0) {
-          val = i + '.0';
-        } else if (i % 0.5 === 0) {
-          val = i.toFixed(1);
-        } else {
-          val = i.toFixed(2);
+
+        // Update autocomplete
+        function updateAutocomplete() {
+            const coffees = [...new Set(shots.map(s => s.coffee))];
+            const screens = [...new Set(shots.map(s => s.screen).filter(Boolean))];
+
+            document.getElementById('coffeeList').innerHTML = coffees.map(c => `<option value="${c}">`).join('');
+            document.getElementById('screenList').innerHTML = screens.map(s => `<option value="${s}">`).join('');
         }
-        option.value = val;
-        option.textContent = val;
-        select.appendChild(option);
-      }
-      select.value = '5.0';
-    }
-    
-    // Cargar registros
-    function loadRecords() {
-      try {
-        const stored = localStorage.getItem('espresso-records');
-        if (stored) {
-          records = JSON.parse(stored);
+
+        // Save shot
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const now = new Date();
+            
+            const shot = {
+                date: now.toISOString().split('T')[0],
+                time: now.toTimeString().split(' ')[0].substring(0, 5),
+                datetime: now.toISOString(),
+                coffee: formData.get('coffee'),
+                screen: formData.get('screen') || null,
+                preinfusion: formData.get('preinfusion'),
+                dose: parseFloat(formData.get('dose')),
+                grindsize: formData.get('grindsize') ? parseFloat(formData.get('grindsize')) : null,
+                yield: parseFloat(formData.get('yield')),
+                time: parseFloat(formData.get('time')),
+                troubleshooting: formData.get('troubleshooting'),
+                notes: formData.get('notes') || null
+            };
+
+            shot.ratio = (shot.yield / shot.dose).toFixed(2);
+
+            shots.unshift(shot);
+            localStorage.setItem('shots', JSON.stringify(shots));
+            localStorage.setItem('lastShot', JSON.stringify(shot));
+            lastShot = shot;
+
+            // Clear form but keep defaults
+            form.reset();
+            loadLastShotDefaults();
+            calculateRatio();
+            updateAutocomplete();
+            renderShots();
+
+            alert('✅ Shot saved successfully');
+        });
+
+        // Clear form
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            if (confirm('Clear the form?')) {
+                form.reset();
+                ratioDisplay.textContent = 'Ratio: -';
+            }
+        });
+
+        // Render shots
+        function renderShots() {
+            if (shots.length === 0) {
+                shotsList.innerHTML = '<div class="empty-state">No shots recorded yet</div>';
+                return;
+            }
+
+            shotsList.innerHTML = shots.map((shot, index) => {
+                const datetime = new Date(shot.datetime);
+                const dateStr = datetime.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                const timeStr = datetime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+
+                const troubleshootingClass = shot.troubleshooting === 'Yes' ? 'troubleshooting' : '';
+                const troubleshootingBadge = shot.troubleshooting === 'Yes' ? '<span class="troubleshooting-badge">⚠️ Troubleshooting</span>' : '';
+
+                return `
+                    <div class="shot-item ${troubleshootingClass}">
+                        <div class="shot-header">
+                            <div>
+                                <span class="shot-coffee">${shot.coffee}</span>
+                                ${troubleshootingBadge}
+                            </div>
+                            <span class="shot-datetime">${dateStr} ${timeStr}</span>
+                        </div>
+                        <div class="shot-details">
+                            ${shot.screen ? `<div class="shot-detail"><strong>Screen:</strong> <span>${shot.screen}</span></div>` : ''}
+                            <div class="shot-detail"><strong>Preinfusion:</strong> <span>${shot.preinfusion}</span></div>
+                            <div class="shot-detail"><strong>Dose:</strong> <span>${shot.dose}g</span></div>
+                            ${shot.grindsize !== null ? `<div class="shot-detail"><strong>Grind:</strong> <span>${shot.grindsize}</span></div>` : ''}
+                            <div class="shot-detail"><strong>Yield:</strong> <span>${shot.yield}g</span></div>
+                            <div class="shot-detail"><strong>Ratio:</strong> <span>1:${shot.ratio}</span></div>
+                            <div class="shot-detail"><strong>Time:</strong> <span>${shot.time}s</span></div>
+                            ${shot.notes ? `<div class="shot-detail" style="grid-column: 1/-1;"><strong>Notes:</strong> <span>${shot.notes}</span></div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
-        updateSuggestions();
-        renderTable();
-      } catch (e) {
-        console.error('Error loading:', e);
-      }
-      
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-    }
-    
-    // Guardar registros
-    function saveRecordsToStorage() {
-      try {
-        localStorage.setItem('espresso-records', JSON.stringify(records));
-      } catch (e) {
-        showError('Error al guardar los datos');
-      }
-    }
-    
-    // Actualizar sugerencias
-    function updateSuggestions() {
-      cafeSuggestions = [...new Set(records.map(r => r.cafe).filter(Boolean))];
-      cestaSuggestions = [...new Set(records.map(r => r.cesta).filter(Boolean))];
-    }
-    
-    // Mostrar formulario
-    function showForm() {
-      const lastRecord = records.length > 0 ? records[records.length - 1] : null;
-      const now = new Date();
-      
-      document.getElementById('fecha').value = now.toISOString().split('T')[0];
-      document.getElementById('hora').value = now.toTimeString().slice(0, 5);
-      document.getElementById('cafe').value = lastRecord?.cafe || '';
-      document.getElementById('cesta').value = lastRecord?.cesta || '';
-      document.getElementById('dosis').value = lastRecord?.dosis || '';
-      document.getElementById('grosor').value = lastRecord?.grosor || '5.0';
-      document.getElementById('yield').value = '';
-      document.getElementById('tiempo').value = '';
-      document.getElementById('comentario').value = '';
-      
-      document.getElementById('formTitle').textContent = 'Nuevo registro';
-      document.getElementById('saveBtn').textContent = 'Guardar';
-      editingId = null;
-      
-      updateRatio();
-      
-      document.getElementById('newShotBtn').classList.add('hidden');
-      document.getElementById('formCard').classList.remove('hidden');
-    }
-    
-    // Ocultar formulario
-    function hideForm() {
-      document.getElementById('formCard').classList.add('hidden');
-      document.getElementById('newShotBtn').classList.remove('hidden');
-      editingId = null;
-    }
-    
-    // Calcular ratio
-    function calculateRatio(dosis, yieldVal) {
-      const d = parseFloat(dosis);
-      const y = parseFloat(yieldVal);
-      if (d > 0 && y > 0) {
-        return (y / d).toFixed(2);
-      }
-      return '-';
-    }
-    
-    // Actualizar display del ratio
-    function updateRatio() {
-      const dosis = document.getElementById('dosis').value;
-      const yieldVal = document.getElementById('yield').value;
-      document.getElementById('ratioDisplay').textContent = calculateRatio(dosis, yieldVal);
-    }
-    
-    // Mostrar sugerencias
-    function showSuggestions(field) {
-      const suggestions = field === 'cafe' ? cafeSuggestions : cestaSuggestions;
-      const container = document.getElementById(field + 'Suggestions');
-      const input = document.getElementById(field);
-      
-      if (suggestions.length === 0) {
-        container.classList.add('hidden');
-        return;
-      }
-      
-      const filtered = filterSuggestionsList(suggestions, input.value);
-      renderSuggestions(container, filtered, field);
-      
-      if (filtered.length > 0) {
-        container.classList.remove('hidden');
-      }
-    }
-    
-    // Filtrar sugerencias
-    function filterSuggestions(field) {
-      const suggestions = field === 'cafe' ? cafeSuggestions : cestaSuggestions;
-      const container = document.getElementById(field + 'Suggestions');
-      const input = document.getElementById(field);
-      
-      const filtered = filterSuggestionsList(suggestions, input.value);
-      renderSuggestions(container, filtered, field);
-      
-      if (filtered.length > 0) {
-        container.classList.remove('hidden');
-      } else {
-        container.classList.add('hidden');
-      }
-    }
-    
-    function filterSuggestionsList(suggestions, value) {
-      if (!value) return suggestions;
-      const lower = value.toLowerCase();
-      return suggestions.filter(s => s.toLowerCase().includes(lower));
-    }
-    
-    function renderSuggestions(container, suggestions, field) {
-      container.innerHTML = suggestions.map(s => 
-        `<div class="suggestion-item" onclick="selectSuggestion('${field}', '${s.replace(/'/g, "\\'")}')">${s}</div>`
-      ).join('');
-    }
-    
-    function selectSuggestion(field, value) {
-      document.getElementById(field).value = value;
-      document.getElementById(field + 'Suggestions').classList.add('hidden');
-    }
-    
-    // Guardar registro
-    function saveRecord() {
-      const dosis = document.getElementById('dosis').value;
-      const yieldVal = document.getElementById('yield').value;
-      const tiempo = document.getElementById('tiempo').value;
-      
-      if (!dosis || !yieldVal || !tiempo) {
-        showError('Por favor, completa dosis, yield y tiempo.');
-        return;
-      }
-      
-      const record = {
-        id: editingId || Date.now(),
-        fecha: document.getElementById('fecha').value,
-        hora: document.getElementById('hora').value,
-        cafe: document.getElementById('cafe').value,
-        cesta: document.getElementById('cesta').value,
-        dosis: dosis,
-        grosor: document.getElementById('grosor').value,
-        yield: yieldVal,
-        tiempo: tiempo,
-        comentario: document.getElementById('comentario').value,
-        ratio: calculateRatio(dosis, yieldVal)
-      };
-      
-      if (editingId) {
-        const index = records.findIndex(r => r.id === editingId);
-        if (index !== -1) {
-          records[index] = record;
+
+        // Export CSV
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            if (shots.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = ['Date', 'Time', 'Coffee', 'Screen', 'Preinfusion', 'Dose (g)', 'Grind Size', 'Yield (g)', 'Ratio', 'Time (s)', 'Troubleshooting', 'Notes'];
+            const rows = shots.map(s => [
+                s.date,
+                s.time,
+                s.coffee,
+                s.screen || '',
+                s.preinfusion,
+                s.dose,
+                s.grindsize !== null ? s.grindsize : '',
+                s.yield,
+                s.ratio,
+                s.time,
+                s.troubleshooting,
+                s.notes || ''
+            ]);
+
+            const csv = [headers, ...rows]
+                .map(row => row.map(cell => `"${cell}"`).join(','))
+                .join('\n');
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `shotbuster_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        });
+
+        // Import CSV
+        document.getElementById('importBtn').addEventListener('click', () => {
+            importFile.click();
+        });
+
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const csv = event.target.result;
+                    const lines = csv.split('\n').filter(line => line.trim());
+                    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                    
+                    const importedShots = lines.slice(1).map(line => {
+                        const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+                        
+                        const dateTime = new Date(`${values[0]} ${values[1]}`);
+                        
+                        return {
+                            date: values[0],
+                            time: values[1],
+                            datetime: dateTime.toISOString(),
+                            coffee: values[2],
+                            screen: values[3] || null,
+                            preinfusion: values[4],
+                            dose: parseFloat(values[5]),
+                            grindsize: values[6] ? parseFloat(values[6]) : null,
+                            yield: parseFloat(values[7]),
+                            ratio: values[8],
+                            time: parseFloat(values[9]),
+                            troubleshooting: values[10],
+                            notes: values[11] || null
+                        };
+                    });
+
+                    shots = [...importedShots, ...shots];
+                    localStorage.setItem('shots', JSON.stringify(shots));
+                    updateAutocomplete();
+                    renderShots();
+                    alert(`✅ ${importedShots.length} shots imported successfully`);
+                } catch (error) {
+                    alert('❌ Error importing CSV file');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            importFile.value = '';
+        });
+
+        // Clear all
+        document.getElementById('clearAllBtn').addEventListener('click', () => {
+            if (confirm('⚠️ Are you sure you want to delete ALL data? This cannot be undone.')) {
+                if (confirm('⚠️ FINAL CONFIRMATION: All recorded shots will be deleted.')) {
+                    shots = [];
+                    localStorage.removeItem('shots');
+                    localStorage.removeItem('lastShot');
+                    lastShot = null;
+                    renderShots();
+                    updateAutocomplete();
+                    alert('✅ All data has been deleted');
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('SW registration error:', err));
+            });
         }
-      } else {
-        records.push(record);
-      }
-      
-      saveRecordsToStorage();
-      updateSuggestions();
-      renderTable();
-      hideForm();
-    }
-    
-    // Editar registro
-    function editRecord(id) {
-      const record = records.find(r => r.id === id);
-      if (!record) return;
-      
-      document.getElementById('fecha').value = record.fecha;
-      document.getElementById('hora').value = record.hora;
-      document.getElementById('cafe').value = record.cafe || '';
-      document.getElementById('cesta').value = record.cesta || '';
-      document.getElementById('dosis').value = record.dosis;
-      document.getElementById('grosor').value = record.grosor;
-      document.getElementById('yield').value = record.yield;
-      document.getElementById('tiempo').value = record.tiempo;
-      document.getElementById('comentario').value = record.comentario || '';
-      
-      document.getElementById('formTitle').textContent = 'Editar registro';
-      document.getElementById('saveBtn').textContent = 'Actualizar';
-      editingId = id;
-      
-      updateRatio();
-      
-      document.getElementById('newShotBtn').classList.add('hidden');
-      document.getElementById('formCard').classList.remove('hidden');
-    }
-    
-    // Eliminar registro
-    function deleteRecord(id) {
-      if (confirm('¿Eliminar este registro?')) {
-        records = records.filter(r => r.id !== id);
-        saveRecordsToStorage();
-        updateSuggestions();
-        renderTable();
-      }
-    }
-    
-    // Renderizar tabla
-    function renderTable() {
-      const count = records.length;
-      document.getElementById('tableTitle').textContent = `Historial (${count} ${count === 1 ? 'registro' : 'registros'})`;
-      
-      if (count === 0) {
-        document.getElementById('tableEmpty').classList.remove('hidden');
-        document.getElementById('tableScroll').classList.add('hidden');
-        document.getElementById('exportBtn').classList.add('hidden');
-        return;
-      }
-      
-      document.getElementById('tableEmpty').classList.add('hidden');
-      document.getElementById('tableScroll').classList.remove('hidden');
-      document.getElementById('exportBtn').classList.remove('hidden');
-      
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = [...records].reverse().map(r => `
-        <tr>
-          <td>${r.fecha}</td>
-          <td>${r.hora}</td>
-          <td>${r.cafe || '-'}</td>
-          <td>${r.cesta || '-'}</td>
-          <td class="text-right">${r.dosis}g</td>
-          <td class="text-right">${r.grosor}</td>
-          <td class="text-right">${r.yield}g</td>
-          <td class="text-right">${r.tiempo}s</td>
-          <td class="text-right ratio">${r.ratio}</td>
-          <td class="comment" title="${(r.comentario || '').replace(/"/g, '&quot;')}">${r.comentario || '-'}</td>
-          <td class="text-center" style="white-space: nowrap;">
-            <button class="action-btn edit" onclick="editRecord(${r.id})" title="Editar">✏️</button>
-            <button class="action-btn delete" onclick="deleteRecord(${r.id})" title="Eliminar">🗑️</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-    
-    // Exportar a CSV
-    function exportToCSV() {
-      if (records.length === 0) {
-        showError('No hay datos para exportar.');
-        return;
-      }
-      
-      const headers = ['Fecha', 'Hora', 'Café', 'Cesta', 'Dosis (g)', 'Grosor', 'Yield (g)', 'Tiempo (s)', 'Ratio', 'Comentario'];
-      
-      const csvContent = [
-        headers.join(';'),
-        ...records.map(r => [
-          r.fecha,
-          r.hora,
-          `"${(r.cafe || '').replace(/"/g, '""')}"`,
-          `"${(r.cesta || '').replace(/"/g, '""')}"`,
-          r.dosis,
-          r.grosor,
-          r.yield,
-          r.tiempo,
-          r.ratio,
-          `"${(r.comentario || '').replace(/"/g, '""')}"`
-        ].join(';'))
-      ].join('\n');
-      
-      const BOM = '\uFEFF';
-      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `espresso-log-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-    
-    // Mostrar error
-    function showError(message) {
-      document.getElementById('errorMessage').textContent = message;
-      document.getElementById('errorAlert').classList.remove('hidden');
-    }
-    
-    // Ocultar error
-    function hideError() {
-      document.getElementById('errorAlert').classList.add('hidden');
-    }
-    
-    // Registrar Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker registrado'))
-        .catch(err => console.log('Error registrando SW:', err));
-    }
-  </script>
+    </script>
 </body>
 </html>
